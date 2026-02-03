@@ -1,86 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Be My Valentine 💘</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Mobile essentials -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
 
   <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     body {
       margin: 0;
-      height: 100vh;
+      height: 100svh;
       display: flex;
       align-items: center;
       justify-content: center;
       background: radial-gradient(circle at top, #ffe0ef, #ff9a9e);
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       overflow: hidden;
     }
 
     .card {
-      position: relative;
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.35);
       backdrop-filter: blur(14px);
-      padding: 50px 60px;
-      border-radius: 30px;
+      padding: 28px 22px 30px;
+      border-radius: 26px;
       text-align: center;
-      box-shadow: 0 40px 80px rgba(0,0,0,0.25);
-      max-width: 340px;
-      width: 90%;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+      width: min(92vw, 360px);
     }
 
     h1 {
       color: #c9184a;
-      font-size: 1.9rem;
-      min-height: 80px;
+      font-size: clamp(1.4rem, 5vw, 1.8rem);
+      min-height: 3.5em;
+      margin-bottom: 22px;
+      line-height: 1.2;
     }
 
     .buttons {
       position: relative;
-      height: 150px;
-      margin-top: 20px;
+      height: 130px;
+      margin-top: 10px;
     }
 
     button {
-      padding: 14px 36px;
+      padding: 14px 28px;
       font-size: 1rem;
       border: none;
       border-radius: 999px;
       cursor: pointer;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      touch-action: manipulation;
     }
 
     button:active {
-      transform: scale(0.94);
+      transform: scale(0.95);
     }
 
     #yes {
       position: absolute;
-      left: 10px;
+      left: 0;
       background: linear-gradient(135deg, #ff4d6d, #ff758f);
       color: white;
     }
 
     #no {
       position: absolute;
-      right: 10px;
+      right: 0;
       background: #e9ecef;
       color: #343a40;
     }
 
-    #no:hover {
-      box-shadow: 0 16px 35px rgba(0,0,0,0.35);
+    .message {
+      margin-top: 18px;
+      font-size: 0.9rem;
+      color: #6c757d;
+      min-height: 1.4em;
     }
 
-    /* Floating hearts */
+    /* Floating hearts (lightweight) */
     .heart {
-      position: absolute;
-      bottom: -30px;
-      font-size: 22px;
+      position: fixed;
+      bottom: -20px;
+      font-size: 20px;
+      pointer-events: none;
       animation: floatUp linear forwards;
       opacity: 0.7;
-      pointer-events: none;
     }
 
     @keyframes floatUp {
@@ -89,24 +101,16 @@
         opacity: 0;
       }
       to {
-        transform: translateY(-120vh) scale(1.5);
+        transform: translateY(-110svh) scale(1.4);
         opacity: 0;
       }
-    }
-
-    /* Cute message popup */
-    .message {
-      margin-top: 20px;
-      font-size: 0.95rem;
-      color: #6c757d;
-      min-height: 24px;
     }
   </style>
 </head>
 <body>
 
-  <!-- Background music -->
-  <audio autoplay loop>
+  <!-- iOS-safe background music (starts after first interaction) -->
+  <audio id="bgMusic" loop>
     <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_1b5a16c93b.mp3" type="audio/mpeg">
   </audio>
 
@@ -129,52 +133,52 @@
 
     function typeWriter() {
       if (i < text.length) {
-        typeEl.innerHTML += text.charAt(i);
-        i++;
-        setTimeout(typeWriter, 70);
+        typeEl.textContent += text.charAt(i++);
+        setTimeout(typeWriter, 60);
       }
     }
     typeWriter();
 
-    /* Yes button escape */
+    /* Start music on first interaction (mobile safe) */
+    const music = document.getElementById("bgMusic");
+    const startMusic = () => {
+      music.play().catch(() => {});
+      document.removeEventListener("touchstart", startMusic);
+      document.removeEventListener("click", startMusic);
+    };
+    document.addEventListener("touchstart", startMusic, { once: true });
+    document.addEventListener("click", startMusic, { once: true });
+
+    /* Yes button escape (touch + hover) */
     const yesBtn = document.getElementById("yes");
-    yesBtn.addEventListener("mouseenter", () => {
-      const x = Math.random() * 240 - 120;
-      const y = Math.random() * 100 - 50;
+    function moveYes() {
+      const x = Math.random() * 180 - 90;
+      const y = Math.random() * 70 - 35;
       yesBtn.style.transform = `translate(${x}px, ${y}px)`;
 
-      if (navigator.vibrate) {
-        navigator.vibrate(30);
-      }
-    });
+      if (navigator.vibrate) navigator.vibrate(25);
+    }
+    yesBtn.addEventListener("mouseenter", moveYes);
+    yesBtn.addEventListener("touchstart", moveYes);
 
-    /* No button pressure */
+    /* No button feedback */
     const noBtn = document.getElementById("no");
     const message = document.getElementById("message");
-    let moveCloser = 0;
-
     noBtn.addEventListener("click", () => {
-      message.innerText = "Still choosing no? That hurts… but I respect it 💔";
+      message.textContent = "Okay… I’ll still bring chocolates 🍫💔";
     });
 
-    setInterval(() => {
-      moveCloser += 4;
-      noBtn.style.right = `${10 - moveCloser}px`;
-    }, 1500);
-
-    /* Floating hearts generator */
+    /* Lightweight floating hearts */
     function createHeart() {
       const heart = document.createElement("div");
       heart.className = "heart";
-      heart.innerText = Math.random() > 0.5 ? "💗" : "💖";
+      heart.textContent = Math.random() > 0.5 ? "💖" : "💗";
       heart.style.left = Math.random() * 100 + "vw";
-      heart.style.animationDuration = 4 + Math.random() * 4 + "s";
+      heart.style.animationDuration = 4 + Math.random() * 3 + "s";
       document.body.appendChild(heart);
-
-      setTimeout(() => heart.remove(), 7000);
+      setTimeout(() => heart.remove(), 6000);
     }
-
-    setInterval(createHeart, 600);
+    setInterval(createHeart, 900);
   </script>
 
 </body>
